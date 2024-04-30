@@ -1,24 +1,32 @@
 import requests
+import time
+from random import randint
 import lxml
 from bs4 import BeautifulSoup
 
+categories = ['football', 'hockey', 'basketball', 'boxing', 'tennis']
 url = 'https://www.sports.ru/'
 
-response = requests.get(url=url)
+for category in categories:
 
-main_page = BeautifulSoup(response.text, 'lxml')
+    full_url = url + category
+    time.sleep(randint(1, 6))
+    response = requests.get(url=full_url)
 
-# Collecting news
-data = main_page.find('ul', class_='aside-news-list list-reset aside-news-block__list')
-content = data.find_all('li' , class_='aside-news-list__item js-active')
-for topic in content:
-    try:
-        fires = topic.find('span', class_='link link_size_small link_color_blue comment-count__value').text
-    except AttributeError:
-        fires = 'None'
-    topic_link = topic.find('a', class_='analyticsTrackClick link link_size_small link_color_black').get('href')
+    main_page = BeautifulSoup(response.text, 'lxml')
+
+    news_block = main_page.find_all('li', class_='aside-news-list__item js-active')
+    for block in news_block:
+        try:
+            timestamp = block.find('time').get('datetime')
+            title = block.find('a', class_='analyticsTrackClick link link_size_small link_color_black').text
+            link = block.find('a').get('href')
+            time.sleep(randint(1, 6))
+            page_response = requests.get(url=link)
+            page = BeautifulSoup(page_response.text, 'lxml')
+            topic = page.find('article', class_='news-item js-active')
+            text = topic.find('div', class_='news-item__content js-mediator-article').text
+            print(timestamp + '\n' + category + '\n' + '\n' + title + '\n' + link + '\n' + text + '\n\n\n')
+        except (AttributeError, ConnectionError, OSError) as error:
+            pass
     
-    page_response = requests.get(url=topic_link)
-    page = BeautifulSoup(page_response.text, 'lxml')
-    page_content = page.find('div', class_='news-item__content js-mediator-article').text
-    print(page_content + fires + '\n')
