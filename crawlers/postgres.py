@@ -10,10 +10,10 @@ try:
         password=password,
     )
     
-    #creating a new table
+    # creating a new table
     with connection.cursor() as cursor:
         cursor.execute(
-            """CREATE TABLE sport_news(
+            """CREATE TABLE news(
                 id serial PRIMARY KEY,
                 timestamp varchar,
                 category varchar,
@@ -29,7 +29,7 @@ try:
     # with connection.cursor() as cursor:
     #     cursor.execute(
     #         """
-    #         DROP TABLE sport_news
+    #         DROP TABLE economic_news
     #         """
     #     )
     #     connection.commit()

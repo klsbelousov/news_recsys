@@ -9,8 +9,8 @@ from config import host, user, password, database
 
 
 
-categories = ['football', 'hockey', 'basketball', 'boxing', 'tennis']
 url = 'https://www.sports.ru/'
+categories = ['football', 'hockey', 'basketball', 'boxing', 'tennis']
 
 try:
     connection = psycopg2.connect(
@@ -23,7 +23,7 @@ try:
     for category in categories:
 
         full_url = url + category
-        time.sleep(randint(1, 6))
+        #time.sleep(randint(1, 3))
         response = requests.get(url=full_url)
 
         main_page = BeautifulSoup(response.text, 'lxml')
@@ -34,14 +34,14 @@ try:
                 timestamp = block.find('time').get('datetime')
                 title = block.find('a', class_='analyticsTrackClick link link_size_small link_color_black').text
                 link = block.find('a').get('href')
-                time.sleep(randint(1, 6))
+                #time.sleep(randint(1, 6))
                 page_response = requests.get(url=link)
                 page = BeautifulSoup(page_response.text, 'lxml')
                 topic = page.find('article', class_='news-item js-active')
                 text = topic.find('div', class_='news-item__content js-mediator-article').text
                 with connection.cursor() as cursor:
                     cursor.execute(
-                        f'INSERT INTO sport_news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
+                        f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
                         (timestamp, category, title, link, text)
                     )
                     connection.commit()
