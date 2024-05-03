@@ -10,6 +10,7 @@ try:
         password=password,
     )
     
+    # DROP TABLE
     with connection.cursor() as cursor:
         cursor.execute(
             """
@@ -34,7 +35,6 @@ try:
         connection.commit()
         print('Table created')
 
-    # DROP TABLE
 
 #     with connection.cursor() as cursor:
 #         cursor.execute(
