@@ -10,6 +10,15 @@ try:
         password=password,
     )
     
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DROP TABLE news
+            """
+        )
+        connection.commit()
+        print('Table was deleted')
+    
     # creating a new table
     with connection.cursor() as cursor:
         cursor.execute(
@@ -17,7 +26,7 @@ try:
                 id serial PRIMARY KEY,
                 timestamp varchar,
                 category varchar,
-                title text,
+                title varchar,
                 link varchar,
                 text text
             )"""
@@ -25,15 +34,7 @@ try:
         connection.commit()
         print('Table created')
 
-
-    # with connection.cursor() as cursor:
-    #     cursor.execute(
-    #         """
-    #         DROP TABLE economic_news
-    #         """
-    #     )
-    #     connection.commit()
-    #     print('Table was deleted')
+    # DROP TABLE
 
 #     with connection.cursor() as cursor:
 #         cursor.execute(
@@ -49,8 +50,4 @@ except Exception as error:
 finally:
     if connection:
         connection.close()
-    
-    
-
-
-        # print("PostgreSQL connection closed")
+        print("PostgreSQL connection closed")

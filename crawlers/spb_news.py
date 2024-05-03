@@ -9,6 +9,12 @@ from bs4 import BeautifulSoup
 
 cities = {'SpB': 'https://www.spb.kp.ru', 'Moscow': 'https://www.msk.kp.ru'}
 
+def check_duplicate(title):
+        cur = connection.cursor()
+        cur.execute("SELECT link FROM news WHERE title = %s", (title,))
+        #print(cur.fetchone() is not None)
+        return cur.fetchone() is not None
+
 for city, url in cities.items():
     try:
         connection = psycopg2.connect(
@@ -25,7 +31,7 @@ for city, url in cities.items():
         news_blocks = main_page.find('div', class_='sc-k5zf9p-13 fsrrpT')
         blocks = news_blocks.find_all('div', class_='sc-k5zf9p-1 kRfBQJ')
         for block in blocks:
-            time = block.find('time').get('datetime')
+            timestamp = block.find('time').get('datetime')
             title = block.find('a', class_='sc-k5zf9p-3 dqylVG').text
             link = url + block.find('a', class_='sc-k5zf9p-3 dqylVG').get('href')
             #print(time + '\n' + title + '\n' + link + '\n\n')
@@ -37,13 +43,16 @@ for city, url in cities.items():
             for article in paragraphs:
                 text += article.text
             
-            with connection.cursor() as cursor:
-                        cursor.execute(
-                            f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
-                            (time, category, title, link, text)
-                        )
-                        connection.commit()
-                        print('[INFO] Data was successfully added')
+            if not (check_duplicate(title=title)):
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
+                        (timestamp, category, title, link, text)
+                    )
+                    connection.commit()
+                    print('[INFO] Data was successfully added')
+            else:
+                break
         
 
     except Exception as error:

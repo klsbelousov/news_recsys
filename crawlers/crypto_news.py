@@ -12,6 +12,12 @@ url_default = 'https://cryptonews.net/ru/'
 url = 'https://cryptonews.net'
 category = 'crypto'
 
+def check_duplicate(title):
+        cur = connection.cursor()
+        cur.execute("SELECT link FROM news WHERE title = %s", (title,))
+        #print(cur.fetchone() is not None)
+        return cur.fetchone() is not None
+
 try:
     connection = psycopg2.connect(
         host=host,
@@ -33,13 +39,14 @@ try:
     
         timestamp = block.find('div', class_="row middle-xs")
         timestamp = timestamp.find('span', class_='datetime flex middle-xs').text
-        full_url = url+link
+        link = url+link
 
 
-        with connection.cursor() as cursor:
+        if not (check_duplicate(title=title)):
+            with connection.cursor() as cursor:
                 cursor.execute(
                     f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
-                    (timestamp, category, title, full_url, text)
+                    (timestamp, category, title, link, text)
                 )
                 connection.commit()
                 print('[INFO] Data was successfully added')

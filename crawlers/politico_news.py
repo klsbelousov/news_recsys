@@ -10,9 +10,13 @@ from config import host, user, password, database
 url = 'https://lenta.ru'
 category = 'politico'
 
+def check_duplicate(title):
+        cur = connection.cursor()
+        cur.execute("SELECT link FROM news WHERE title = %s", (title,))
+        #print(cur.fetchone() is not None)
+        return cur.fetchone() is not None
 
 try:
-
     connection = psycopg2.connect(
         host=host,
         user=user,
@@ -37,15 +41,21 @@ try:
             text = page.find('div', class_='topic-body__content').text
 
             #print(timestamp + '\n' + category + '\n' + title + '\n' + link + '\n' + text + '\n\n')
-
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
-                    (timestamp, category, title, link, text)
-                )
-                connection.commit()
-                print('[INFO] Data was successfully added')
+            if not (check_duplicate(title=title)):
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f'INSERT INTO news (timestamp, category, title, link, text) VALUES (%s, %s, %s, %s, %s);',
+                        (timestamp, category, title, link, text)
+                    )
+                    connection.commit()
+                    print('[INFO] Data was successfully added')
+            else:
+                break
         
         
 except Exception as error:
     pass
+
+finally:
+    if connection:
+        connection.close()
